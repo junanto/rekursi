@@ -1,10 +1,624 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Game Sedang Pemeliharaan</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Pembelajaran Fungsi Rekursi</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 650px;
+            width: 100%;
+            padding: 28px;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+        }
+
+        p.subtitle {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .player-info {
+            background-color: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #475569;
+            margin-top: 8px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background-color: #eef2ff;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .stat-item span {
+            color: var(--primary);
+        }
+
+        .card {
+            background-color: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .function-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .function-box {
+            background-color: #1e293b;
+            color: #38bdf8;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            padding: 16px;
+            border-radius: 8px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+        }
+
+        .inputs-container {
+            display: flex;
+            gap: 10px;
+            justify-content: space-between;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 55px;
+        }
+
+        .input-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #475569;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 4px;
+            text-align: center;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .input-group input.correct {
+            border-color: var(--success);
+            background-color: #ecfdf5;
+            color: #065f46;
+        }
+
+        .input-group input.wrong {
+            border-color: var(--error);
+            background-color: #fef2f2;
+            color: #991b1b;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-check { background-color: var(--primary); color: white; }
+        .btn-check:hover { background-color: var(--primary-hover); }
+
+        .btn-next { background-color: #cbd5e1; color: #1e293b; }
+        .btn-next:hover { background-color: #94a3b8; }
+
+        .btn-leaderboard { background-color: #0284c7; color: white; }
+        .btn-leaderboard:hover { background-color: #0369a1; }
+
+        .feedback {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+        }
+
+        .feedback.success { display: block; background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .feedback.error { display: block; background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+        .explanation {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            font-weight: normal;
+            text-align: left;
+            line-height: 1.4;
+            color: #334155;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .modal-content input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 16px 0;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .leaderboard-table th {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+    </style>
 </head>
-<body style="text-align: center; font-family: sans-serif; padding-top: 50px;">
-    <h1>Game Rekursi Sedang Nonaktif Sementara</h1>
-    <p>Kami sedang melakukan perbaikan/pemeliharaan. Silakan kembali lagi nanti!</p>
+<body>
+
+<!-- Modal Start (Input Nama) -->
+<div class="modal-overlay" id="modal-start">
+    <div class="modal-content">
+        <h2>Selamat Datang!</h2>
+        <p style="margin-top: 8px; color: #64748b;">Masukkan nama Anda untuk mulai bermain:</p>
+        <input type="text" id="player-name-input" placeholder="Nama Lengkap / Panggilan" maxlength="25">
+        <button class="btn-check" onclick="startGame()">Mulai Bermain</button>
+    </div>
+</div>
+
+<!-- Modal Game Over -->
+<div class="modal-overlay" id="modal-gameover" style="display: none;">
+    <div class="modal-content">
+        <h2 style="color: var(--error);">💔 Game Over!</h2>
+        <p style="margin-top: 12px; color: #475569;">Nyawa Anda telah habis.</p>
+        <div style="margin: 16px 0; font-size: 1.1rem; font-weight: bold;">
+            Skor Akhir: <span id="final-score" style="color: var(--primary);">0</span> | Best Streak: <span id="final-streak" style="color: #d97706;">0 🔥</span>
+        </div>
+        <div class="actions">
+            <button class="btn-check" onclick="resetGame()">Main Lagi 🔄</button>
+            <button class="btn-leaderboard" onclick="showLeaderboard()">🏆 Leaderboard</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Leaderboard -->
+<div class="modal-overlay" id="modal-leaderboard" style="display: none;">
+    <div class="modal-content">
+        <h2>🏆 Papan Peringkat (Top 10)</h2>
+        <div id="leaderboard-loading" style="margin: 16px 0;">Memuat data...</div>
+        <table class="leaderboard-table" id="leaderboard-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nama</th>
+                    <th>Skor</th>
+                    <th>Streak</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body"></tbody>
+        </table>
+        <button class="btn-next" onclick="closeLeaderboard()" style="margin-top: 16px; width: 100%;">Tutup</button>
+    </div>
+</div>
+
+<div class="container">
+    <header>
+        <h1>Tebak Deret Rekursi</h1>
+        <p class="subtitle">Hitung 5 suku pertama dari fungsi rekursi!</p>
+        <div class="player-info" id="player-display">Pemain: -</div>
+    </header>
+
+    <div class="stats-bar">
+        <div class="stat-item">Nyawa: <span id="lives">❤️❤️❤️</span></div>
+        <div class="stat-item">Skor: <span id="score">0</span></div>
+        <div class="stat-item">Streak: <span id="streak">0</span> 🔥</div>
+    </div>
+
+    <div class="card">
+        <div class="function-title" id="pattern-type">Pola Rekursi</div>
+        <div class="function-box" id="function-display"></div>
+
+        <p style="font-weight: 600; font-size: 0.85rem; color: #475569;">Isi suku-suku berikut:</p>
+
+        <div class="inputs-container">
+            <div class="input-group">
+                <label for="term-1">f(1)</label>
+                <input type="number" id="term-1" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="term-2">f(2)</label>
+                <input type="number" id="term-2" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="term-3">f(3)</label>
+                <input type="number" id="term-3" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="term-4">f(4)</label>
+                <input type="number" id="term-4" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="term-5">f(5)</label>
+                <input type="number" id="term-5" autocomplete="off">
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn-check" id="btn-check" onclick="checkAnswer()">Periksa Jawaban</button>
+        <button class="btn-next" id="btn-next" onclick="generateProblem()" style="display: none;">Soal Lanjut →</button>
+        <button class="btn-leaderboard" onclick="showLeaderboard()">🏆 Leaderboard</button>
+    </div>
+
+    <div class="feedback" id="feedback-box">
+        <div id="feedback-message"></div>
+        <div class="explanation" id="explanation-text"></div>
+    </div>
+</div>
+
+<script>
+    // GANTI URL DI BAWAH INI DENGAN URL GOOGLE APPS SCRIPT ANDA
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzv6vnrd6_5wClDkvOXnovcljTKrcB7Wb4LQz3HQ4W3gXX3C-DSZ_zaamhoJY6Gfkim/exec";
+
+    let playerName = "";
+    let currentSequence = [];
+    let score = 0;
+    let streak = 0;
+    let maxStreak = 0;
+    let lives = 3;
+    let isChecked = false;
+
+    function startGame() {
+        const input = document.getElementById('player-name-input').value.trim();
+        if (!input) {
+            alert("Harap masukkan nama Anda!");
+            return;
+        }
+        playerName = input;
+        document.getElementById('player-display').innerText = `Pemain: ${playerName}`;
+        document.getElementById('modal-start').style.display = 'none';
+        resetGameStats();
+        generateProblem();
+    }
+
+    function resetGameStats() {
+        score = 0;
+        streak = 0;
+        maxStreak = 0;
+        lives = 3;
+        updateUIStats();
+    }
+
+    function resetGame() {
+        document.getElementById('modal-gameover').style.display = 'none';
+        resetGameStats();
+        generateProblem();
+    }
+
+    function updateUIStats() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('streak').innerText = streak;
+        
+        let hearts = "";
+        for (let i = 0; i < lives; i++) hearts += "❤️";
+        for (let i = lives; i < 3; i++) hearts += "🖤";
+        document.getElementById('lives').innerText = hearts || "🖤🖤🖤";
+    }
+
+    const generators = [
+        function() {
+            const start = Math.floor(Math.random() * 10) + 1;
+            const diff = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.3 ? 1 : -1);
+            const seq = [start];
+            for(let i = 1; i < 5; i++) seq.push(seq[i-1] + diff);
+            const op = diff >= 0 ? `+ ${diff}` : `- ${Math.abs(diff)}`;
+            return {
+                title: "Rekursi Linier (Aritmatika)",
+                display: `f(1) = ${start}\nf(n) = f(n-1) ${op} , untuk n > 1`,
+                sequence: seq,
+                explain: `Suku pertama f(1) = ${start}. Suku berikutnya dikurangi/ditambah ${diff}.`
+            };
+        },
+        function() {
+            const start = Math.floor(Math.random() * 4) + 1;
+            const mult = Math.floor(Math.random() * 3) + 2;
+            const seq = [start];
+            for(let i = 1; i < 5; i++) seq.push(seq[i-1] * mult);
+            return {
+                title: "Rekursi Geometri",
+                display: `f(1) = ${start}\nf(n) = ${mult} × f(n-1) , untuk n > 1`,
+                sequence: seq,
+                explain: `Suku pertama f(1) = ${start}. Setiap suku dikalikan ${mult}.`
+            };
+        },
+        function() {
+            const start = Math.floor(Math.random() * 5) + 1;
+            const seq = [start];
+            for(let i = 2; i <= 5; i++) seq.push(seq[seq.length - 1] + i);
+            return {
+                title: "Rekursi dengan Indeks (n)",
+                display: `f(1) = ${start}\nf(n) = f(n-1) + n , untuk n > 1`,
+                sequence: seq,
+                explain: `Suku bertambah sesuai dengan nilai n (f(2)=f(1)+2, dst).`
+            };
+        },
+        function() {
+            const a = Math.floor(Math.random() * 3) + 1;
+            const b = Math.floor(Math.random() * 3) + 1;
+            const seq = [a, b];
+            for(let i = 2; i < 5; i++) seq.push(seq[i-1] + seq[i-2]);
+            return {
+                title: "Rekursi Tipe Fibonacci",
+                display: `f(1) = ${a}\nf(2) = ${b}\nf(n) = f(n-1) + f(n-2) , untuk n > 2`,
+                sequence: seq,
+                explain: `Suku baru adalah penjumlahan 2 suku sebelumnya.`
+            };
+        }
+    ];
+
+    function generateProblem() {
+        if (lives <= 0) return;
+
+        isChecked = false;
+        document.getElementById('feedback-box').className = 'feedback';
+        document.getElementById('btn-check').style.display = 'block';
+        document.getElementById('btn-next').style.display = 'none';
+
+        for (let i = 1; i <= 5; i++) {
+            const input = document.getElementById(`term-${i}`);
+            input.value = '';
+            input.className = '';
+            input.disabled = false;
+        }
+
+        const problem = generators[Math.floor(Math.random() * generators.length)]();
+        currentSequence = problem.sequence;
+        document.getElementById('pattern-type').innerText = problem.title;
+        document.getElementById('function-display').innerText = problem.display;
+        document.getElementById('explanation-text').innerText = problem.explain;
+        document.getElementById('term-1').focus();
+    }
+
+    function checkAnswer() {
+        if (isChecked || lives <= 0) return;
+
+        let allCorrect = true;
+        for (let i = 1; i <= 5; i++) {
+            const input = document.getElementById(`term-${i}`);
+            const val = parseInt(input.value, 10);
+
+            if (val === currentSequence[i - 1]) {
+                input.className = 'correct';
+            } else {
+                input.className = 'wrong';
+                allCorrect = false;
+            }
+            input.disabled = true;
+        }
+
+        const feedbackBox = document.getElementById('feedback-box');
+        const feedbackMsg = document.getElementById('feedback-message');
+
+        if (allCorrect) {
+            score += 10;
+            streak += 1;
+            if (streak > maxStreak) maxStreak = streak;
+            feedbackBox.className = 'feedback success';
+            feedbackMsg.innerHTML = '🎉 Jawaban Benar!';
+            document.getElementById('btn-check').style.display = 'none';
+            document.getElementById('btn-next').style.display = 'block';
+        } else {
+            streak = 0;
+            lives -= 1;
+            feedbackBox.className = 'feedback error';
+            
+            if (lives > 0) {
+                feedbackMsg.innerHTML = `❌ Kurang Tepat (-1 Nyawa). Jawaban: <strong>${currentSequence.join(', ')}</strong>`;
+                document.getElementById('btn-check').style.display = 'none';
+                document.getElementById('btn-next').style.display = 'block';
+            } else {
+                feedbackMsg.innerHTML = `❌ Kurang Tepat. Jawaban: <strong>${currentSequence.join(', ')}</strong>`;
+                submitScoreToGoogleSheets(score, maxStreak);
+                setTimeout(showGameOver, 1200);
+            }
+        }
+
+        updateUIStats();
+        isChecked = true;
+    }
+
+    function showGameOver() {
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('final-streak').innerText = maxStreak;
+        document.getElementById('modal-gameover').style.display = 'flex';
+    }
+
+    function submitScoreToGoogleSheets(currentScore, currentStreak) {
+        if (!WEB_APP_URL || WEB_APP_URL.includes("GANTI_URL")) return;
+
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nama: playerName,
+                skor: currentScore,
+                streak: currentStreak
+            })
+        }).catch(err => console.error('Gagal mengirim skor:', err));
+    }
+
+    function showLeaderboard() {
+        document.getElementById('modal-leaderboard').style.display = 'flex';
+        document.getElementById('leaderboard-loading').style.display = 'block';
+        document.getElementById('leaderboard-table').style.display = 'none';
+
+        if (!WEB_APP_URL || WEB_APP_URL.includes("GANTI_URL")) {
+            document.getElementById('leaderboard-loading').innerText = "URL Apps Script belum dikonfigurasi.";
+            return;
+        }
+
+        fetch(WEB_APP_URL)
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('leaderboard-body');
+                tbody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    document.getElementById('leaderboard-loading').innerText = "Belum ada data skor.";
+                    return;
+                }
+
+                data.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td><strong>${row.nama}</strong></td>
+                        <td>${row.skor}</td>
+                        <td>${row.streak} 🔥</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('leaderboard-loading').style.display = 'none';
+                document.getElementById('leaderboard-table').style.display = 'table';
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('leaderboard-loading').innerText = "Gagal mengambil data leaderboard.";
+            });
+    }
+
+    function closeLeaderboard() {
+        document.getElementById('modal-leaderboard').style.display = 'none';
+    }
+
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            if (document.getElementById('modal-start').style.display !== 'none') {
+                startGame();
+            } else if (document.getElementById('modal-gameover').style.display !== 'none') {
+                resetGame();
+            } else if (!isChecked) {
+                checkAnswer();
+            } else if (lives > 0) {
+                generateProblem();
+            }
+        }
+    });
+</script>
+
 </body>
 </html>
