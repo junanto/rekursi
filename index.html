@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Pembelajaran Fungsi Rekursi + Leaderboard</title>
+    <title>Game Pembelajaran Fungsi Rekursi</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -109,6 +109,7 @@
             border-radius: 8px;
             line-height: 1.6;
             margin-bottom: 12px;
+            white-space: pre-wrap;
         }
 
         .inputs-container {
@@ -271,9 +272,24 @@
 <div class="modal-overlay" id="modal-start">
     <div class="modal-content">
         <h2>Selamat Datang!</h2>
-        <p style="margin-top: 8px; color: #64748b;">Masukkan nama Anda untuk mulai bermain dan masuk ke Leaderboard:</p>
+        <p style="margin-top: 8px; color: #64748b;">Masukkan nama Anda untuk mulai bermain:</p>
         <input type="text" id="player-name-input" placeholder="Nama Lengkap / Panggilan" maxlength="25">
         <button class="btn-check" onclick="startGame()">Mulai Bermain</button>
+    </div>
+</div>
+
+<!-- Modal Game Over -->
+<div class="modal-overlay" id="modal-gameover" style="display: none;">
+    <div class="modal-content">
+        <h2 style="color: var(--error);">💔 Game Over!</h2>
+        <p style="margin-top: 12px; color: #475569;">Nyawa Anda telah habis.</p>
+        <div style="margin: 16px 0; font-size: 1.1rem; font-weight: bold;">
+            Skor Akhir: <span id="final-score" style="color: var(--primary);">0</span> | Best Streak: <span id="final-streak" style="color: #d97706;">0 🔥</span>
+        </div>
+        <div class="actions">
+            <button class="btn-check" onclick="resetGame()">Main Lagi 🔄</button>
+            <button class="btn-leaderboard" onclick="showLeaderboard()">🏆 Leaderboard</button>
+        </div>
     </div>
 </div>
 
@@ -305,6 +321,7 @@
     </header>
 
     <div class="stats-bar">
+        <div class="stat-item">Nyawa: <span id="lives">❤️❤️❤️</span></div>
         <div class="stat-item">Skor: <span id="score">0</span></div>
         <div class="stat-item">Streak: <span id="streak">0</span> 🔥</div>
     </div>
@@ -359,6 +376,8 @@
     let currentSequence = [];
     let score = 0;
     let streak = 0;
+    let maxStreak = 0;
+    let lives = 3;
     let isChecked = false;
 
     function startGame() {
@@ -370,7 +389,32 @@
         playerName = input;
         document.getElementById('player-display').innerText = `Pemain: ${playerName}`;
         document.getElementById('modal-start').style.display = 'none';
+        resetGameStats();
         generateProblem();
+    }
+
+    function resetGameStats() {
+        score = 0;
+        streak = 0;
+        maxStreak = 0;
+        lives = 3;
+        updateUIStats();
+    }
+
+    function resetGame() {
+        document.getElementById('modal-gameover').style.display = 'none';
+        resetGameStats();
+        generateProblem();
+    }
+
+    function updateUIStats() {
+        document.getElementById('score').innerText = score;
+        document.getElementById('streak').innerText = streak;
+        
+        let hearts = "";
+        for (let i = 0; i < lives; i++) hearts += "❤️";
+        for (let i = lives; i < 3; i++) hearts += "🖤";
+        document.getElementById('lives').innerText = hearts || "🖤🖤🖤";
     }
 
     const generators = [
@@ -425,6 +469,8 @@
     ];
 
     function generateProblem() {
+        if (lives <= 0) return;
+
         isChecked = false;
         document.getElementById('feedback-box').className = 'feedback';
         document.getElementById('btn-check').style.display = 'block';
@@ -446,7 +492,7 @@
     }
 
     function checkAnswer() {
-        if (isChecked) return;
+        if (isChecked || lives <= 0) return;
 
         let allCorrect = true;
         for (let i = 1; i <= 5; i++) {
@@ -468,20 +514,35 @@
         if (allCorrect) {
             score += 10;
             streak += 1;
+            if (streak > maxStreak) maxStreak = streak;
             feedbackBox.className = 'feedback success';
             feedbackMsg.innerHTML = '🎉 Jawaban Benar!';
-            submitScoreToGoogleSheets(score, streak);
+            document.getElementById('btn-check').style.display = 'none';
+            document.getElementById('btn-next').style.display = 'block';
         } else {
             streak = 0;
+            lives -= 1;
             feedbackBox.className = 'feedback error';
-            feedbackMsg.innerHTML = `❌ Kurang Tepat. Jawaban: <strong>${currentSequence.join(', ')}</strong>`;
+            
+            if (lives > 0) {
+                feedbackMsg.innerHTML = `❌ Kurang Tepat (-1 Nyawa). Jawaban: <strong>${currentSequence.join(', ')}</strong>`;
+                document.getElementById('btn-check').style.display = 'none';
+                document.getElementById('btn-next').style.display = 'block';
+            } else {
+                feedbackMsg.innerHTML = `❌ Kurang Tepat. Jawaban: <strong>${currentSequence.join(', ')}</strong>`;
+                submitScoreToGoogleSheets(score, maxStreak);
+                setTimeout(showGameOver, 1200);
+            }
         }
 
-        document.getElementById('score').innerText = score;
-        document.getElementById('streak').innerText = streak;
-        document.getElementById('btn-check').style.display = 'none';
-        document.getElementById('btn-next').style.display = 'block';
+        updateUIStats();
         isChecked = true;
+    }
+
+    function showGameOver() {
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('final-streak').innerText = maxStreak;
+        document.getElementById('modal-gameover').style.display = 'flex';
     }
 
     function submitScoreToGoogleSheets(currentScore, currentStreak) {
@@ -548,9 +609,11 @@
         if (e.key === 'Enter') {
             if (document.getElementById('modal-start').style.display !== 'none') {
                 startGame();
+            } else if (document.getElementById('modal-gameover').style.display !== 'none') {
+                resetGame();
             } else if (!isChecked) {
                 checkAnswer();
-            } else {
+            } else if (lives > 0) {
                 generateProblem();
             }
         }
